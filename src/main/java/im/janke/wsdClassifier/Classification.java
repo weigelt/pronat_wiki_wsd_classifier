@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package im.janke.wsdClassifier;
 
 public class Classification implements Comparable<Classification> {
 	private final String classification;

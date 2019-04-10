@@ -1,7 +1,7 @@
 /**
  *
  */
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package im.janke.wsdClassifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;

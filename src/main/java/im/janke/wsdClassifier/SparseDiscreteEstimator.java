@@ -19,7 +19,7 @@
  *     Modified by Jan Keim, Karlsruhe Institute of Technology
  */
 
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package im.janke.wsdClassifier;
 
 import java.util.HashMap;
 

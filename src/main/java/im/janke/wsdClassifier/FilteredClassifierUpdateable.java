@@ -19,7 +19,7 @@
  * Copyright (C) 2008 University of Waikato, Hamilton, New Zealand
  */
 
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package im.janke.wsdClassifier;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.UpdateableClassifier;

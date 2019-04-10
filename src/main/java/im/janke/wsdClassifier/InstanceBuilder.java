@@ -1,7 +1,7 @@
 /**
  *
  */
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package im.janke.wsdClassifier;
 
 import weka.core.DenseInstance;
 import weka.core.Instance;
