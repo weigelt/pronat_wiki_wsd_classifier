@@ -194,7 +194,7 @@ public class ClassifierService {
 	 *
 	 * @return ArrayList with attributes
 	 */
-	private static ArrayList<Attribute> getAttributes() {
+	public static ArrayList<Attribute> getAttributes() {
 		ArrayList<Attribute> attributes = new ArrayList<>();
 
 		// Declare the class attribute (as string attribute)
