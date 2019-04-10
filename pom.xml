@@ -11,7 +11,7 @@
 	<name>WSD</name>
 
 	<properties>
-		<weka.version>3.8.1</weka.version>
+		<weka.version>3.8.3</weka.version>
 	</properties>
 
 	<dependencies>
