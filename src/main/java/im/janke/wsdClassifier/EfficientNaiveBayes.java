@@ -189,8 +189,6 @@ public class EfficientNaiveBayes extends NaiveBayes {
         }
     }
 
-    private static final double actualWordExtraWeight = 10;
-
     public double[] logDistributionForInstance(Instance instance) {
         if (m_UseDiscretization) {
             m_Disc.input(instance);
@@ -218,12 +216,7 @@ public class EfficientNaiveBayes extends NaiveBayes {
                 }
 
                 double probXInCk = m_Distributions[attIndex][k].getProbability(instance.value(a));
-                if (attIndex == 0) {
-                    logNumerator[k] += actualWordExtraWeight * instance.weight() * Math.log(probXInCk);
-                } else {
-                    logNumerator[k] += instance.weight() * Math.log(probXInCk);
-                }
-
+                logNumerator[k] += instance.weight() * Math.log(probXInCk);
             }
         }
 

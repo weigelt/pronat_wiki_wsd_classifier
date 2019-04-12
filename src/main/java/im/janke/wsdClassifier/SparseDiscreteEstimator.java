@@ -21,6 +21,7 @@
 
 package im.janke.wsdClassifier;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -48,14 +49,14 @@ public class SparseDiscreteEstimator extends Estimator
     private static final long serialVersionUID = -5526486742612434779L;
 
     /** Hold the counts */
-    private final ConcurrentHashMap<Integer, Double> m_Counts;
+    private final ConcurrentHashMap<Integer, Double> counts;
     private int numSymbols;
 
     /** Hold the sum of counts */
-    private AtomicReference<Double> m_SumOfCounts = new AtomicReference<>(0d);
+    private AtomicReference<Double> sumOfCounts = new AtomicReference<>(0d);
 
     /** Initialization for counts */
-    private double m_FPrior = 0d;
+    private double fPrior = 0d;
 
     /**
      * Constructor
@@ -66,12 +67,12 @@ public class SparseDiscreteEstimator extends Estimator
      *            if true, counts will be initialized to 1
      */
     public SparseDiscreteEstimator(int numSymbols, boolean laplace) {
-        m_Counts = new ConcurrentHashMap<>();
+        counts = new ConcurrentHashMap<>();
         this.numSymbols = numSymbols;
-        m_SumOfCounts.set(0d);
+        sumOfCounts.set(0d);
         if (laplace) {
-            m_FPrior = 1d;
-            m_SumOfCounts.set((double) numSymbols);
+            fPrior = 1d;
+            sumOfCounts.set((double) numSymbols);
         }
     }
 
@@ -84,9 +85,9 @@ public class SparseDiscreteEstimator extends Estimator
      *            value with which counts will be initialized
      */
     public SparseDiscreteEstimator(int nSymbols, float fPrior) {
-        m_Counts = new ConcurrentHashMap<>();
-        m_FPrior = fPrior;
-        m_SumOfCounts.set((double) fPrior * (double) nSymbols);
+        counts = new ConcurrentHashMap<>();
+        this.fPrior = fPrior;
+        sumOfCounts.set((double) fPrior * (double) nSymbols);
     }
 
     /**
@@ -99,8 +100,8 @@ public class SparseDiscreteEstimator extends Estimator
      */
     @Override
     public void addValue(double data, double weight) {
-        m_Counts.compute((int) data, (key, value) -> value == null ? m_FPrior + weight : value + weight);
-        m_SumOfCounts.getAndUpdate(val -> val + weight);
+        counts.compute((int) data, (key, value) -> value == null ? fPrior + weight : value + weight);
+        sumOfCounts.getAndUpdate(val -> val + weight);
     }
 
     /**
@@ -112,11 +113,11 @@ public class SparseDiscreteEstimator extends Estimator
      */
     @Override
     public double getProbability(double data) {
-        if (m_SumOfCounts.get() == 0) {
+        if (sumOfCounts.get() == 0) {
             return 0;
         }
 
-        return m_Counts.getOrDefault((int) data, m_FPrior) / m_SumOfCounts.get();
+        return counts.getOrDefault((int) data, fPrior) / sumOfCounts.get();
     }
 
     /**
@@ -136,16 +137,11 @@ public class SparseDiscreteEstimator extends Estimator
      * @return the count of the supplied value
      */
     public double getCount(double data) {
-        synchronized (this) {
-            if (m_SumOfCounts.get() == 0) {
-                return 0;
-            }
-            Double val = m_Counts.get((int) data);
-            if (val == null) {
-                val = m_FPrior;
-            }
-            return val;
+        if (sumOfCounts.get() == 0) {
+            return 0;
         }
+
+        return counts.getOrDefault((int) data, fPrior);
     }
 
     /**
@@ -154,7 +150,7 @@ public class SparseDiscreteEstimator extends Estimator
      * @return the total sum of counts
      */
     public double getSumOfCounts() {
-        return m_SumOfCounts.get();
+        return sumOfCounts.get();
     }
 
     /**
@@ -164,7 +160,7 @@ public class SparseDiscreteEstimator extends Estimator
     public String toString() {
         StringBuilder result = new StringBuilder("Discrete Estimator.");
         result.append("  Total = ")
-              .append(m_SumOfCounts)
+              .append(sumOfCounts)
               .append("\n");
         return result.toString();
     }
@@ -203,22 +199,20 @@ public class SparseDiscreteEstimator extends Estimator
     }
 
     @Override
-    public SparseDiscreteEstimator aggregate(SparseDiscreteEstimator toAggregate) throws Exception {
+    public SparseDiscreteEstimator aggregate(SparseDiscreteEstimator toAggregate) throws IllegalArgumentException {
         synchronized (this) {
             if (toAggregate.getNumSymbols() != numSymbols) {
-                throw new Exception("DiscreteEstimator to aggregate has a different " + "number of symbols");
+                throw new IllegalArgumentException(
+                        "DiscreteEstimator to aggregate has a different " + "number of symbols");
             }
 
-            m_SumOfCounts.updateAndGet(val -> val + toAggregate.getSumOfCounts());
-            for (Integer i : toAggregate.m_Counts.keySet()) {
-                Double otherVal = toAggregate.m_Counts.get(i);
-                Double thisVal = m_Counts.get(i);
-                if (thisVal == null) {
-                    thisVal = m_FPrior;
-                }
-                m_Counts.put(i, (thisVal + otherVal) - toAggregate.m_FPrior);
+            sumOfCounts.updateAndGet(val -> val + toAggregate.getSumOfCounts());
+            for (Integer i : toAggregate.counts.keySet()) {
+                Double otherVal = toAggregate.counts.get(i);
+                Double thisVal = counts.getOrDefault(i, fPrior);
+                counts.put(i, (thisVal + otherVal) - toAggregate.fPrior);
             }
-            m_SumOfCounts.updateAndGet(val -> val - (toAggregate.m_FPrior * numSymbols));
+            sumOfCounts.updateAndGet(val -> val - (toAggregate.fPrior * numSymbols));
             return this;
         }
     }
@@ -226,5 +220,37 @@ public class SparseDiscreteEstimator extends Estimator
     @Override
     public void finalizeAggregation() throws Exception {
         // nothing to do
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(counts, fPrior, numSymbols, sumOfCounts);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!(obj instanceof SparseDiscreteEstimator)) {
+            return false;
+        }
+        SparseDiscreteEstimator other = (SparseDiscreteEstimator) obj;
+        return Objects.equals(counts, other.counts)
+                && Double.doubleToLongBits(fPrior) == Double.doubleToLongBits(other.fPrior)
+                && numSymbols == other.numSymbols && Objects.equals(sumOfCounts, other.sumOfCounts);
     }
 }
