@@ -12,7 +12,7 @@ import weka.core.Instances;
  *
  */
 public class InstanceBuilder {
-	private final Instance instance;
+	private Instance instance;
 	private static final String NONE_VAL = "NONE";
 
 	public InstanceBuilder(Instances header) {
@@ -99,7 +99,7 @@ public class InstanceBuilder {
 		return this;
 	}
 
-	private static void addAttributeToInstance(Instance instance, int attrIndex, String attrValue) {
+	private void addAttributeToInstance(Instance instance, int attrIndex, String attrValue) {
 		if (!attrValue.equals(NONE_VAL)) {
 			instance.setValue(attrIndex, attrValue);
 		}

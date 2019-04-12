@@ -25,15 +25,15 @@ import weka.filters.Filter;
 public class ClassifierService {
 	private static final Logger logger = LoggerFactory.getLogger(ClassifierService.class);
 
-	private final Classifier classifier;
-	private final Filter filter;
-	private final Instances header;
+	private Classifier	classifier;
+	private Filter		filter;
+	private Instances	header;
 
 	// Filterlist for stuff, that might occur and we don't want
-	public static List<String> filterWords = Arrays.asList("NONE", ".", ",", ";", "-rrb-", "-rsb-", "-lrb-", "-lsb-", "\'\'", "\'", "--",
-			"-", ":", "``", "`", "|", "!", "?", "<", ">", "_", "−", "#", "...", "-lcb-", "-rcb-", "<math>", "\\", "</sup>", "<sup>", "+",
-			"ii", "iii", "</u>", "<u>", "</tt>", "<tt>", "=");
-	public static List<String> additionalFilterWords = Arrays.asList("'s", "%");
+	public static List<String>	filterWords				= Arrays.asList("NONE", ".", ",", ";", "-rrb-", "-rsb-",
+			"-lrb-", "-lsb-", "\'\'", "\'", "--", "-", ":", "``", "`", "|", "!", "?", "<", ">", "_", "−", "#", "...",
+			"-lcb-", "-rcb-", "<math>", "\\", "</sup>", "<sup>", "+", "ii", "iii", "</u>", "<u>", "</tt>", "<tt>", "=");
+	public static List<String>	additionalFilterWords	= Arrays.asList("'s", "%");
 
 	public ClassifierService(Classifier classifier, Filter filter) {
 		this.classifier = classifier;
@@ -48,9 +48,8 @@ public class ClassifierService {
 	}
 
 	/**
-	 * Classifies the instance and return the value of the classified instance. The
-	 * class attribute has to be a nominal or string attribute, otherwise an empty
-	 * string.
+	 * Classifies the instance and return the value of the classified instance. The class attribute has to be a nominal
+	 * or string attribute, otherwise an empty string.
 	 *
 	 * @param instance
 	 * @return
@@ -81,23 +80,23 @@ public class ClassifierService {
 		return c;
 	}
 
-	private double[] getDistributionArray(Instance instance) throws Exception {
+	protected double[] getDistributionArray(Instance instance) throws Exception {
 		if (classifier instanceof EfficientNaiveBayes) {
 			return ((EfficientNaiveBayes) classifier).logDistributionForInstance(instance);
 		} else {
-			logger.warn("Not using the EfficientNaiveBayes, thus not using thee more precise logarithmic distribution.");
+			logger.warn(
+					"Not using the EfficientNaiveBayes, thus not using thee more precise logarithmic distribution.");
 			return classifier.distributionForInstance(instance);
 		}
 	}
 
 	/**
-	 * Always paired entries: First the Classification, then followed by its
-	 * probability.
+	 * Always paired entries: First the Classification, then followed by its probability.
 	 *
 	 * @param instance
 	 * @return
 	 */
-	private Classification[] classifyInstanceTop3(Instance instance) {
+	public Classification[] classifyInstanceTop3(Instance instance) {
 		if ((classifier == null) || (filter == null)) {
 			throw new IllegalStateException("Classifier or Filter are null!");
 		}
@@ -144,19 +143,20 @@ public class ClassifierService {
 		Classification[] top3clazz = classifyInstanceTop3(instance);
 		clazz = top3clazz[0];
 		for (int i = 2; i >= 0; i--) {
-			if (top3clazz[i].getClassificationString().toLowerCase().contains(lemma) && distributionIsSimilar(top3clazz[0], top3clazz[i])) {
+			if (top3clazz[i].getClassificationString().toLowerCase().contains(lemma)
+					&& distributionIsSimilar(top3clazz[0], top3clazz[i])) {
 				clazz = top3clazz[i];
 			}
 		}
 		if (logger.isDebugEnabled()) {
-			String disamStr = String.format("%s -> %s -- %s; %s; %s", lemma, clazz.getClassificationString(), top3clazz[0], top3clazz[1],
-					top3clazz[2]);
+			String disamStr = String.format("%s -> %s -- %s; %s; %s", lemma, clazz.getClassificationString(),
+					top3clazz[0], top3clazz[1], top3clazz[2]);
 			logger.debug(disamStr);
 		}
 		return clazz;
 	}
 
-	private static boolean distributionIsSimilar(Classification main, Classification other) {
+	private boolean distributionIsSimilar(Classification main, Classification other) {
 		// TODO check because we have logarithmic values!!
 		double threshold = 0.75;
 		double relation = 0;
@@ -169,7 +169,7 @@ public class ClassifierService {
 		}
 	}
 
-	private static boolean instanceIsFiltered(Instance instance) {
+	private boolean instanceIsFiltered(Instance instance) {
 		for (int i = 0; i < instance.numAttributes(); i++) {
 			if (!instance.attribute(i).isNominal()) {
 				return false;
@@ -178,7 +178,7 @@ public class ClassifierService {
 		return true;
 	}
 
-	private static Classification[] emptyTop3Classification() {
+	private Classification[] emptyTop3Classification() {
 		return new Classification[] { Classification.empty(), Classification.empty(), Classification.empty() };
 	}
 
@@ -243,8 +243,8 @@ public class ClassifierService {
 	}
 
 	/**
-	 * Creates the header for instances with name, attributes and set class index.
-	 * Uses the provided attributes to set to the header.
+	 * Creates the header for instances with name, attributes and set class index. Uses the provided attributes to set
+	 * to the header.
 	 *
 	 * @param attributes
 	 *            Attributes that should be set to the header
@@ -263,7 +263,7 @@ public class ClassifierService {
 	 *            Instance that should be handled
 	 * @return Value of the class attribute
 	 */
-	protected static Optional<String> getStringOfClassAttributeValue(Instance instance) {
+	protected Optional<String> getStringOfClassAttributeValue(Instance instance) {
 		return Optional.ofNullable(instance.stringValue(instance.classAttribute()));
 	}
 

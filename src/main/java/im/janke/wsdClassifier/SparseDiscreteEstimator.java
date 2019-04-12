@@ -21,7 +21,8 @@
 
 package im.janke.wsdClassifier;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import weka.core.Aggregateable;
 import weka.core.Capabilities;
@@ -32,206 +33,198 @@ import weka.estimators.Estimator;
 import weka.estimators.IncrementalEstimator;
 
 /**
- * This is basically {@link DiscreteEstimator}, but changed for own needs.
- * Simple symbolic probability estimator based on symbol counts.
+ * This is basically {@link DiscreteEstimator}, but changed for own needs. Simple symbolic probability estimator based
+ * on symbol counts.
  *
- * Changed stuff by Jan Keim: use float instead of double for less memory usage
+ * Changed stuff by Jan Keim: use floats instead of double and a HashMap instead of arrays for less memory usage
  *
  * @author Len Trigg (trigg@cs.waikato.ac.nz), Jan Keim
  * @version $Revision: 11247 $
  */
-public class SparseDiscreteEstimator extends Estimator implements IncrementalEstimator, Aggregateable<SparseDiscreteEstimator> {
+public class SparseDiscreteEstimator extends Estimator
+        implements IncrementalEstimator, Aggregateable<SparseDiscreteEstimator> {
 
-	/** for serialization */
-	private static final long serialVersionUID = -5526486742612434779L;
+    /** for serialization */
+    private static final long serialVersionUID = -5526486742612434779L;
 
-	/** Hold the counts */
-	private final HashMap<Integer, Double> m_Counts;
-	private int numSymbols;
+    /** Hold the counts */
+    private final ConcurrentHashMap<Integer, Double> m_Counts;
+    private int numSymbols;
 
-	/** Hold the sum of counts */
-	private double m_SumOfCounts;
+    /** Hold the sum of counts */
+    private AtomicReference<Double> m_SumOfCounts = new AtomicReference<>(0d);
 
-	/** Initialization for counts */
-	private double m_FPrior = 0d;
+    /** Initialization for counts */
+    private double m_FPrior = 0d;
 
-	/**
-	 * Constructor
-	 *
-	 * @param numSymbols
-	 *            the number of possible symbols (remember to include 0)
-	 * @param laplace
-	 *            if true, counts will be initialized to 1
-	 */
-	SparseDiscreteEstimator(int numSymbols, boolean laplace) {
-		m_Counts = new HashMap<>();
-		this.numSymbols = numSymbols;
-		m_SumOfCounts = 0;
-		if (laplace) {
-			m_FPrior = 1;
-			m_SumOfCounts = numSymbols;
-		}
-	}
+    /**
+     * Constructor
+     *
+     * @param numSymbols
+     *            the number of possible symbols (remember to include 0)
+     * @param laplace
+     *            if true, counts will be initialized to 1
+     */
+    public SparseDiscreteEstimator(int numSymbols, boolean laplace) {
+        m_Counts = new ConcurrentHashMap<>();
+        this.numSymbols = numSymbols;
+        m_SumOfCounts.set(0d);
+        if (laplace) {
+            m_FPrior = 1d;
+            m_SumOfCounts.set((double) numSymbols);
+        }
+    }
 
-	/**
-	 * Constructor
-	 *
-	 * @param nSymbols
-	 *            the number of possible symbols (remember to include 0)
-	 * @param fPrior
-	 *            value with which counts will be initialized
-	 */
-	public SparseDiscreteEstimator(int nSymbols, float fPrior) {
-		m_Counts = new HashMap<>();
-		m_FPrior = fPrior;
-		m_SumOfCounts = fPrior * nSymbols;
-	}
+    /**
+     * Constructor
+     *
+     * @param nSymbols
+     *            the number of possible symbols (remember to include 0)
+     * @param fPrior
+     *            value with which counts will be initialized
+     */
+    public SparseDiscreteEstimator(int nSymbols, float fPrior) {
+        m_Counts = new ConcurrentHashMap<>();
+        m_FPrior = fPrior;
+        m_SumOfCounts.set((double) fPrior * (double) nSymbols);
+    }
 
-	/**
-	 * Add a new data value to the current estimator.
-	 *
-	 * @param data
-	 *            the new data value
-	 * @param weight
-	 *            the weight assigned to the data value
-	 */
-	@Override
-	public void addValue(double data, double weight) {
-		synchronized (this) {
-			Double old = m_Counts.get((int) data);
-			if (old == null) {
-				old = m_FPrior;
-			}
-			m_Counts.put((int) data, old + weight);
-			m_SumOfCounts += weight;
-		}
-	}
+    /**
+     * Add a new data value to the current estimator.
+     *
+     * @param data
+     *            the new data value
+     * @param weight
+     *            the weight assigned to the data value
+     */
+    @Override
+    public void addValue(double data, double weight) {
+        m_Counts.compute((int) data, (key, value) -> value == null ? m_FPrior + weight : value + weight);
+        m_SumOfCounts.getAndUpdate(val -> val + weight);
+    }
 
-	/**
-	 * Get a probability estimate for a value
-	 *
-	 * @param data
-	 *            the value to estimate the probability of
-	 * @return the estimated probability of the supplied value
-	 */
-	@Override
-	public double getProbability(double data) {
-		synchronized (this) {
-			if (m_SumOfCounts == 0) {
-				return 0;
-			}
-			Double val = m_Counts.get((int) data);
-			if (val == null) {
-				val = m_FPrior;
-			}
-			return val / m_SumOfCounts;
-		}
-	}
+    /**
+     * Get a probability estimate for a value
+     *
+     * @param data
+     *            the value to estimate the probability of
+     * @return the estimated probability of the supplied value
+     */
+    @Override
+    public double getProbability(double data) {
+        if (m_SumOfCounts.get() == 0) {
+            return 0;
+        }
 
-	/**
-	 * Gets the number of symbols this estimator operates with
-	 *
-	 * @return the number of estimator symbols
-	 */
-	private int getNumSymbols() {
-		return numSymbols;
-	}
+        return m_Counts.getOrDefault((int) data, m_FPrior) / m_SumOfCounts.get();
+    }
 
-	/**
-	 * Get the count for a value
-	 *
-	 * @param data
-	 *            the value to get the count of
-	 * @return the count of the supplied value
-	 */
-	public double getCount(double data) {
-		synchronized (this) {
-			if (m_SumOfCounts == 0) {
-				return 0;
-			}
-			Double val = m_Counts.get((int) data);
-			if (val == null) {
-				val = m_FPrior;
-			}
-			return val;
-		}
-	}
+    /**
+     * Gets the number of symbols this estimator operates with
+     *
+     * @return the number of estimator symbols
+     */
+    public int getNumSymbols() {
+        return numSymbols;
+    }
 
-	/**
-	 * Get the sum of all the counts
-	 *
-	 * @return the total sum of counts
-	 */
-	private double getSumOfCounts() {
-		return m_SumOfCounts;
-	}
+    /**
+     * Get the count for a value
+     *
+     * @param data
+     *            the value to get the count of
+     * @return the count of the supplied value
+     */
+    public double getCount(double data) {
+        synchronized (this) {
+            if (m_SumOfCounts.get() == 0) {
+                return 0;
+            }
+            Double val = m_Counts.get((int) data);
+            if (val == null) {
+                val = m_FPrior;
+            }
+            return val;
+        }
+    }
 
-	/**
-	 * Display a representation of this estimator
-	 */
-	@Override
-	public String toString() {
-		StringBuffer result = new StringBuffer("Discrete Estimator.");
-		result.append("  Total = ").append(m_SumOfCounts).append("\n");
-		return result.toString();
-	}
+    /**
+     * Get the sum of all the counts
+     *
+     * @return the total sum of counts
+     */
+    public double getSumOfCounts() {
+        return m_SumOfCounts.get();
+    }
 
-	/**
-	 * Returns default capabilities of the classifier.
-	 *
-	 * @return the capabilities of this classifier
-	 */
-	@Override
-	public Capabilities getCapabilities() {
-		Capabilities result = super.getCapabilities();
-		result.disableAll();
+    /**
+     * Display a representation of this estimator
+     */
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder("Discrete Estimator.");
+        result.append("  Total = ")
+              .append(m_SumOfCounts)
+              .append("\n");
+        return result.toString();
+    }
 
-		// class
-		if (!m_noClass) {
-			result.enable(Capability.NOMINAL_CLASS);
-			result.enable(Capability.MISSING_CLASS_VALUES);
-		} else {
-			result.enable(Capability.NO_CLASS);
-		}
+    /**
+     * Returns default capabilities of the classifier.
+     *
+     * @return the capabilities of this classifier
+     */
+    @Override
+    public Capabilities getCapabilities() {
+        Capabilities result = super.getCapabilities();
+        result.disableAll();
 
-		// attributes
-		result.enable(Capability.NUMERIC_ATTRIBUTES);
-		return result;
-	}
+        // class
+        if (!m_noClass) {
+            result.enable(Capability.NOMINAL_CLASS);
+            result.enable(Capability.MISSING_CLASS_VALUES);
+        } else {
+            result.enable(Capability.NO_CLASS);
+        }
 
-	/**
-	 * Returns the revision string.
-	 *
-	 * @return the revision
-	 */
-	@Override
-	public String getRevision() {
-		return RevisionUtils.extract("$Revision: 11247 $");
-	}
+        // attributes
+        result.enable(Capability.NUMERIC_ATTRIBUTES);
+        return result;
+    }
 
-	@Override
-	public SparseDiscreteEstimator aggregate(SparseDiscreteEstimator toAggregate) throws Exception {
-		synchronized (this) {
-			if (toAggregate.getNumSymbols() != numSymbols) {
-				throw new Exception("DiscreteEstimator to aggregate has a different " + "number of symbols");
-			}
+    /**
+     * Returns the revision string.
+     *
+     * @return the revision
+     */
+    @Override
+    public String getRevision() {
+        return RevisionUtils.extract("$Revision: 11247 $");
+    }
 
-			m_SumOfCounts += toAggregate.getSumOfCounts();
-			for (Integer i : toAggregate.m_Counts.keySet()) {
-				Double otherVal = toAggregate.m_Counts.get(i);
-				Double thisVal = m_Counts.get(i);
-				if (thisVal == null) {
-					thisVal = m_FPrior;
-				}
-				m_Counts.put(i, (thisVal + otherVal) - toAggregate.m_FPrior);
-			}
-			m_SumOfCounts -= (toAggregate.m_FPrior * numSymbols);
-			return this;
-		}
-	}
+    @Override
+    public SparseDiscreteEstimator aggregate(SparseDiscreteEstimator toAggregate) throws Exception {
+        synchronized (this) {
+            if (toAggregate.getNumSymbols() != numSymbols) {
+                throw new Exception("DiscreteEstimator to aggregate has a different " + "number of symbols");
+            }
 
-	@Override
-	public void finalizeAggregation() throws Exception {
-		// nothing to do
-	}
+            m_SumOfCounts.updateAndGet(val -> val + toAggregate.getSumOfCounts());
+            for (Integer i : toAggregate.m_Counts.keySet()) {
+                Double otherVal = toAggregate.m_Counts.get(i);
+                Double thisVal = m_Counts.get(i);
+                if (thisVal == null) {
+                    thisVal = m_FPrior;
+                }
+                m_Counts.put(i, (thisVal + otherVal) - toAggregate.m_FPrior);
+            }
+            m_SumOfCounts.updateAndGet(val -> val - (toAggregate.m_FPrior * numSymbols));
+            return this;
+        }
+    }
+
+    @Override
+    public void finalizeAggregation() throws Exception {
+        // nothing to do
+    }
 }
