@@ -1,7 +1,4 @@
-/**
- *
- */
-package im.janke.wsdClassifier;
+package edu.kit.ipd.parse.wikiWSDClassifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +8,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.kit.ipd.parse.wikiWSDClassifier.Classification;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;

@@ -19,7 +19,7 @@
  *     Modified by Jan Keim, Karlsruhe Institute of Technology
  */
 
-package im.janke.wsdClassifier;
+package edu.kit.ipd.parse.wikiWSDClassifier;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -224,7 +224,7 @@ public class SparseDiscreteEstimator extends Estimator
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -234,7 +234,7 @@ public class SparseDiscreteEstimator extends Estimator
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -250,7 +250,7 @@ public class SparseDiscreteEstimator extends Estimator
         }
         SparseDiscreteEstimator other = (SparseDiscreteEstimator) obj;
         return Objects.equals(counts, other.counts)
-                && Double.doubleToLongBits(fPrior) == Double.doubleToLongBits(other.fPrior)
-                && numSymbols == other.numSymbols && Objects.equals(sumOfCounts, other.sumOfCounts);
+                && (Double.doubleToLongBits(fPrior) == Double.doubleToLongBits(other.fPrior))
+                && (numSymbols == other.numSymbols) && Objects.equals(sumOfCounts, other.sumOfCounts);
     }
 }

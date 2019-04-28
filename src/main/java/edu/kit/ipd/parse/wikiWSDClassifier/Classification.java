@@ -1,4 +1,4 @@
-package im.janke.wsdClassifier;
+package edu.kit.ipd.parse.wikiWSDClassifier;
 
 public class Classification implements Comparable<Classification> {
     private String classification;
@@ -83,6 +83,7 @@ public class Classification implements Comparable<Classification> {
         return new Classification("NONE");
     }
 
+    @Override
     public int compareTo(Classification o) {
         return Double.compare(probability, o.getProbability());
     }
