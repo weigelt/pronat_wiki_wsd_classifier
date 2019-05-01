@@ -12,7 +12,6 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
-import weka.estimators.Estimator;
 
 /**
  * Class that represents a slightly adapted NaiveBayes. The original was the {@link NaiveBayes} implementation of Weka
@@ -58,7 +57,7 @@ public class EfficientNaiveBayes extends NaiveBayes {
         m_Instances = instances;
 
         // Reserve space for the distributions
-        m_Distributions = new Estimator[m_Instances.numAttributes() - 1][m_NumClasses];
+        m_Distributions = new SparseDiscreteEstimator[m_Instances.numAttributes() - 1][m_NumClasses];
         m_ClassDistribution = new SparseDiscreteEstimator(m_NumClasses, true);
 
         int attIndex = 0;

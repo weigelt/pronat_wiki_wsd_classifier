@@ -58,6 +58,11 @@ public class SparseDiscreteEstimator extends Estimator
     /** Initialization for counts */
     private double fPrior = 0d;
 
+    protected SparseDiscreteEstimator() {
+        counts = new ConcurrentHashMap<>();
+        sumOfCounts.set(0d);
+    }
+
     /**
      * Constructor
      *
@@ -252,5 +257,29 @@ public class SparseDiscreteEstimator extends Estimator
         return Objects.equals(counts, other.counts)
                 && (Double.doubleToLongBits(fPrior) == Double.doubleToLongBits(other.fPrior))
                 && (numSymbols == other.numSymbols) && Objects.equals(sumOfCounts, other.sumOfCounts);
+    }
+
+    protected double getPrior() {
+        return fPrior;
+    }
+
+    protected ConcurrentHashMap<Integer, Double> getCounts() {
+        return counts;
+    }
+
+    protected void setNumSymbols(int numSymbols) {
+        this.numSymbols = numSymbols;
+    }
+
+    protected void setSumOfCounts(double sumOfCounts) {
+        this.sumOfCounts.set(sumOfCounts);
+    }
+
+    protected void setfPrior(double fPrior) {
+        this.fPrior = fPrior;
+    }
+
+    protected void setCounts(ConcurrentHashMap<Integer, Double> counts) {
+        this.counts.putAll(counts);
     }
 }
