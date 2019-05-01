@@ -1,7 +1,9 @@
 package edu.kit.ipd.parse.wikiWSDClassifier;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -68,28 +70,47 @@ public class EfficientNaiveBayes extends NaiveBayes {
                 if (attribute.type() == Attribute.NOMINAL) {
                     m_Distributions[attIndex][j] = new SparseDiscreteEstimator(attribute.numValues(), true);
                 } else {
-                    throw new Exception("Attribute type unknown to MyNaiveBayes");
+                    throw new Exception("Attribute type unknown to EfficientNaiveBayes");
                 }
             }
             attIndex++;
         }
 
         // Compute counts
-        ExecutorService executor = Executors.newWorkStealingPool();
+        int threads = Runtime.getRuntime()
+                             .availableProcessors();
+        ExecutorService executor = Executors.newWorkStealingPool(threads);
+
+        int instancesPerThread = (int) Math.ceil(m_Instances.size() / (double) threads);
+        List<Instance> currInstances = new ArrayList<>();
+        int counter = 0;
         for (Instance instance : m_Instances) {
-            executor.execute(() -> {
+            currInstances.add(instance);
+            counter++;
+
+            if (counter >= instancesPerThread) {
+                List<Instance> instancesCopy = List.copyOf(currInstances);
+                executor.execute(updateClassifierRunnable(instancesCopy));
+                currInstances = new ArrayList<>();
+                counter = 0;
+            }
+        }
+        executor.shutdown();
+        executor.awaitTermination(255, TimeUnit.MINUTES);
+        // Save space
+        m_Instances = new Instances(m_Instances, 0);
+    }
+
+    private Runnable updateClassifierRunnable(List<Instance> instancesCopy) {
+        return () -> {
+            for (Instance localInstance : instancesCopy) {
                 try {
-                    updateClassifier(instance);
+                    updateClassifier(localInstance);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            });
-        }
-        executor.shutdown();
-        executor.awaitTermination(42, TimeUnit.MINUTES);
-        executor = null;
-        // Save space
-        m_Instances = new Instances(m_Instances, 0);
+            }
+        };
     }
 
     /**
