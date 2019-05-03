@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.kit.ipd.parse.wikiWSDClassifier.Classification;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -64,7 +63,7 @@ public class ClassifierService {
             try {
                 filter.input(instanceCopy);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn(e.getMessage(), e.getCause());
                 return c;
             }
             instanceCopy = filter.output();
@@ -74,7 +73,7 @@ public class ClassifierService {
             c = new Classification(instance.classAttribute()
                                            .value((int) classification));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage(), e.getCause());
         }
         return c;
     }
@@ -107,7 +106,7 @@ public class ClassifierService {
             try {
                 filter.input(instanceCopy);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn(e.getMessage(), e.getCause());
                 return retArray;
             }
             instanceCopy = filter.output();
@@ -116,7 +115,7 @@ public class ClassifierService {
         try {
             distributionArray = getDistributionArray(instanceCopy);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage(), e.getCause());
             return emptyTop3Classification();
         }
         // get the top 3
@@ -203,11 +202,12 @@ public class ClassifierService {
 
         // Declare the class attribute (as string attribute)
         Attribute wordSenseAttribute = new Attribute("wordSense", true);
-        wordSenseAttribute.setWeight(10);
         attributes.add(wordSenseAttribute);
 
         // Declare the feature vector
-        attributes.add(new Attribute("actualWord", true));
+        Attribute actualWordAttribute = new Attribute("actualWord", true);
+        actualWordAttribute.setWeight(10.);
+        attributes.add(actualWordAttribute);
         attributes.add(new Attribute("actualWordPOS", true));
         attributes.add(new Attribute("word-3", true));
         attributes.add(new Attribute("word-3POS", true));

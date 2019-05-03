@@ -101,9 +101,9 @@ public class EfficientNaiveBayes extends NaiveBayes {
         m_Instances = new Instances(m_Instances, 0);
     }
 
-    private Runnable updateClassifierRunnable(List<Instance> instancesCopy) {
+    private Runnable updateClassifierRunnable(List<Instance> instances) {
         return () -> {
-            for (Instance localInstance : instancesCopy) {
+            for (Instance localInstance : instances) {
                 try {
                     updateClassifier(localInstance);
                 } catch (Exception e) {
@@ -206,7 +206,7 @@ public class EfficientNaiveBayes extends NaiveBayes {
         }
     }
 
-    public double[] logDistributionForInstance(Instance instance) {
+    protected double[] logDistributionForInstance(Instance instance) {
         if (m_UseDiscretization) {
             m_Disc.input(instance);
             instance = m_Disc.output();
@@ -223,18 +223,29 @@ public class EfficientNaiveBayes extends NaiveBayes {
             // get the log(p(C_k))
             logNumerator[k] = Math.log(m_ClassDistribution.getProbability(k));
             // calc the Sum(log(p(x|C_k))) for each k
+
             Enumeration<Attribute> enumAtts = instance.enumerateAttributes();
             int attIndex = -1;
             while (enumAtts.hasMoreElements()) {
                 attIndex++;
-                Attribute a = enumAtts.nextElement();
-                if (instance.isMissing(a)) {
+                Attribute attribute = enumAtts.nextElement();
+                if (instance.isMissing(attribute)) {
                     continue;
                 }
 
-                double probXInCk = m_Distributions[attIndex][k].getProbability(instance.value(a));
-                logNumerator[k] += instance.weight() * Math.log(probXInCk);
+                // TODO:
+                // PROBLEM is that that motherfucking weight is always 1, although it was set to 10 for 1st attribute!!!
+                // we can set the weight by hand, but then the trainer-test fails due to different weighting compared to
+                // normal naiveBayes
+                double attributeWeight = m_Instances.attribute(attIndex)
+                                                    .weight();
+                if (attIndex == 0) {
+                    attributeWeight = 10;
+                }
+                double probXInCk = m_Distributions[attIndex][k].getProbability(instance.value(attribute));
+                logNumerator[k] += attributeWeight * instance.weight() * Math.log(probXInCk);
             }
+
         }
 
         // NOTE: to save calculation time omit the denominator.
