@@ -26,7 +26,6 @@ import weka.core.Utils;
  *
  */
 public class EfficientNaiveBayes extends NaiveBayes {
-
     /** for serialization */
     private static final long serialVersionUID = -9126601110930963510L;
 
@@ -233,17 +232,8 @@ public class EfficientNaiveBayes extends NaiveBayes {
                     continue;
                 }
 
-                // TODO:
-                // PROBLEM is that that motherfucking weight is always 1, although it was set to 10 for 1st attribute!!!
-                // we can set the weight by hand, but then the trainer-test fails due to different weighting compared to
-                // normal naiveBayes
-                double attributeWeight = m_Instances.attribute(attIndex)
-                                                    .weight();
-                if (attIndex == 0) {
-                    attributeWeight = 10;
-                }
                 double probXInCk = m_Distributions[attIndex][k].getProbability(instance.value(attribute));
-                logNumerator[k] += attributeWeight * instance.weight() * Math.log(probXInCk);
+                logNumerator[k] += attribute.weight() * instance.weight() * Math.log(probXInCk);
             }
 
         }

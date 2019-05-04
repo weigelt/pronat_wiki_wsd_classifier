@@ -42,6 +42,7 @@ public class ClassifierService {
         this.classifier = classifier;
         this.filter = filter;
         this.header = header;
+        this.header.setAttributeWeight(1, 10.);
     }
 
     /**
@@ -69,6 +70,8 @@ public class ClassifierService {
             instanceCopy = filter.output();
         }
         try {
+            instanceCopy.attribute(1)
+                        .setWeight(10.);
             double classification = classifier.classifyInstance(instanceCopy);
             c = new Classification(instance.classAttribute()
                                            .value((int) classification));
@@ -113,6 +116,8 @@ public class ClassifierService {
         }
         double[] distributionArray = new double[0];
         try {
+            instanceCopy.attribute(1)
+                        .setWeight(10.);
             distributionArray = getDistributionArray(instanceCopy);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
@@ -159,7 +164,6 @@ public class ClassifierService {
     }
 
     private boolean distributionIsSimilar(Classification main, Classification other) {
-        // TODO check because we have logarithmic values!!
         double threshold = 0.75;
         double relation = 0;
         if (other.getProbability() < 0) {
@@ -206,7 +210,7 @@ public class ClassifierService {
 
         // Declare the feature vector
         Attribute actualWordAttribute = new Attribute("actualWord", true);
-        actualWordAttribute.setWeight(10.);
+        actualWordAttribute.setWeight(10d);
         attributes.add(actualWordAttribute);
         attributes.add(new Attribute("actualWordPOS", true));
         attributes.add(new Attribute("word-3", true));
@@ -240,6 +244,7 @@ public class ClassifierService {
         // index
         Instances header = new Instances("WordSenseDisambiguation", attributes, 0);
         header.setClassIndex(0);
+        header.setAttributeWeight(1, 10d);
         return header;
     }
 
@@ -254,6 +259,7 @@ public class ClassifierService {
     public static Instances getEmptyInstancesHeader(ArrayList<Attribute> attributes) {
         Instances header = new Instances("WordSenseDisambiguation", attributes, 0);
         header.setClassIndex(0);
+        header.setAttributeWeight(1, 10d);
         return header;
     }
 
