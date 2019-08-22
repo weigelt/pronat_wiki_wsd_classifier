@@ -1,5 +1,6 @@
 package edu.kit.ipd.parse.wikiWSDClassifier;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class SerializationHelper {
     private static final Logger logger = LoggerFactory.getLogger(SerializationHelper.class);
     private static FSTConfiguration conf;
 
-    private synchronized static FSTConfiguration getFSTConfig() {
+    private static synchronized FSTConfiguration getFSTConfig() {
         if (conf == null) {
             conf = createConf();
         }
@@ -120,7 +121,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((classifier != null) && (classifier instanceof EfficientNaiveBayes)) {
+        if (classifier instanceof EfficientNaiveBayes) {
             return Optional.of((EfficientNaiveBayes) classifier);
         }
         return Optional.empty();
@@ -133,7 +134,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((classifier != null) && (classifier instanceof EfficientNaiveBayes)) {
+        if (classifier instanceof EfficientNaiveBayes) {
             return Optional.of((EfficientNaiveBayes) classifier);
         }
         return Optional.empty();
@@ -154,7 +155,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((filter != null) && (filter instanceof Filter)) {
+        if (filter instanceof Filter) {
             return Optional.of((Filter) filter);
         }
         return Optional.empty();
@@ -167,7 +168,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((filter != null) && (filter instanceof Filter)) {
+        if (filter instanceof Filter) {
             return Optional.of((Filter) filter);
         }
         return Optional.empty();
@@ -188,7 +189,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((instances != null) && (instances instanceof Instances)) {
+        if (instances instanceof Instances) {
             return Optional.of((Instances) instances);
         }
         return Optional.empty();
@@ -201,7 +202,7 @@ public class SerializationHelper {
         } catch (Exception e) {
             logger.warn(e.getMessage(), e.getCause());
         }
-        if ((instances != null) && (instances instanceof Instances)) {
+        if (instances instanceof Instances) {
             return Optional.of((Instances) instances);
         }
         return Optional.empty();
@@ -237,11 +238,14 @@ public class SerializationHelper {
     }
 
     private static Object read(String inputFileName) {
+        File file = new File(inputFileName);
+        if (!file.exists()) {
+            throw new IllegalArgumentException("File does not exist: " + inputFileName);
+        }
         try (FileInputStream stream = new FileInputStream(inputFileName);
                 InputStream in = new InflaterInputStream(stream);
                 FSTObjectInput fstIn = getFSTConfig().getObjectInput(in);) {
-            Object object = fstIn.readObject();
-            return object;
+            return fstIn.readObject();
         } catch (ClassNotFoundException | IOException e) {
             logger.warn(e.getMessage(), e.getCause());
         }
@@ -251,8 +255,7 @@ public class SerializationHelper {
     private static Object readNative(String inputFileName) {
         try (FileInputStream stream = new FileInputStream(inputFileName);
                 ObjectInputStream in = new ObjectInputStream(stream);) {
-            Object object = in.readObject();
-            return object;
+            return in.readObject();
         } catch (ClassNotFoundException | IOException e) {
             logger.warn(e.getMessage(), e.getCause());
         }
@@ -263,8 +266,7 @@ public class SerializationHelper {
         try (FileInputStream stream = new FileInputStream(inputFileName);
                 GZIPInputStream zippedStream = new GZIPInputStream(stream);
                 ObjectInputStream in = new ObjectInputStream(zippedStream);) {
-            Object object = in.readObject();
-            return object;
+            return in.readObject();
         } catch (ClassNotFoundException | IOException e) {
             logger.warn(e.getMessage(), e.getCause());
         }
