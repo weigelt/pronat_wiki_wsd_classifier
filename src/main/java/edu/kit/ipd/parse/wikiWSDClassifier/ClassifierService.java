@@ -316,18 +316,20 @@ public class ClassifierService {
 			try {
 				this.filter.input(instanceCopy);
 			} catch (Exception e) {
-				e.printStackTrace();
+				ClassifierService.logger.warn(e.getMessage(), e.getCause());
 				return List.of(Classification.empty());
 			}
 			instanceCopy = this.filter.output();
 		}
-		double[] distributionArray;
+		double[] distributionArray = new double[0];
 		try {
+			instanceCopy.attribute(1).setWeight(10.);
 			distributionArray = this.getDistributionArray(instanceCopy);
 		} catch (Exception e) {
-			e.printStackTrace();
+			ClassifierService.logger.warn(e.getMessage(), e.getCause());
 			return List.of(Classification.empty());
 		}
+
 		// Sort upside down (max first)
 		SortedSet<Classification> classifications = new TreeSet<>((a, b) -> -a.compareTo(b));
 		// get the top 3
@@ -343,5 +345,4 @@ public class ClassifierService {
 		}
 		return result;
 	}
-
 }
