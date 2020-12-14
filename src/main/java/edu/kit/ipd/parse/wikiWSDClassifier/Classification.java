@@ -29,7 +29,7 @@ public class Classification implements Comparable<Classification> {
     /**
      * @return the probability
      */
-    double getProbability() {
+    public double getProbability() {
         return probability;
     }
 
