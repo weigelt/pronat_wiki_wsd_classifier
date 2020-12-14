@@ -2,8 +2,11 @@ package edu.kit.ipd.parse.wikiWSDClassifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -289,5 +292,56 @@ public class ClassifierService {
                 : "null";
         return "ClassifierService [classifier=" + classifierString + ", filter=" + filterString + "]";
     }
+
+    
+    /**
+	 * Same as {@link #classifyInstanceTop3(Instance)}. But provide top
+	 * x classifications.
+	 *
+	 * @param instance      the instance
+	 * @param lemma         the lemma
+	 * @param maxHypothesis the max amount of classifications
+	 * @return a sorted list (max first) list of classifications
+	 * @author Dominik Fuchss
+	 */
+	public List<Classification> classifyInstanceWithLemma(Instance instance, String lemma, int maxHypothesis) {
+		if ((this.classifier == null) || (this.filter == null)) {
+			throw new IllegalStateException("Classifier or Filter are null!");
+		}
+
+		Instance instanceCopy = new DenseInstance(instance);
+		instanceCopy.setDataset(instance.dataset());
+		if (!this.instanceIsFiltered(instanceCopy)) {
+			// attributes are not nominal, they need to be filtered first!
+			try {
+				this.filter.input(instanceCopy);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return List.of(Classification.empty());
+			}
+			instanceCopy = this.filter.output();
+		}
+		double[] distributionArray;
+		try {
+			distributionArray = this.getDistributionArray(instanceCopy);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return List.of(Classification.empty());
+		}
+		// Sort upside down (max first)
+		SortedSet<Classification> classifications = new TreeSet<>((a, b) -> -a.compareTo(b));
+		// get the top 3
+		for (int i = 0; i < distributionArray.length; i++) {
+			Classification c = new Classification(instance.classAttribute().value(i), distributionArray[i]);
+			classifications.add(c);
+		}
+
+		List<Classification> result = new ArrayList<>();
+		Iterator<Classification> iter = classifications.iterator();
+		while (iter.hasNext() && result.size() < maxHypothesis) {
+			result.add(iter.next());
+		}
+		return result;
+	}
 
 }
