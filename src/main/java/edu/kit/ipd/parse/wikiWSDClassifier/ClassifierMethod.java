@@ -10,16 +10,16 @@ import weka.classifiers.bayes.NaiveBayes;
  *
  */
 public enum ClassifierMethod {
-    EfficientNaiveBayes, NaiveBayes; // J48, RandomForest;
+	EfficientNaiveBayes, NaiveBayes; // J48, RandomForest;
 
-    public Classifier getClassifier() {
-        switch (this) {
-        case EfficientNaiveBayes:
-            return new EfficientNaiveBayes();
-        case NaiveBayes:
-            return new NaiveBayes();
-        default:
-            return new EfficientNaiveBayes();
-        }
-    }
+	public Classifier getClassifier() {
+		switch (this) {
+		case EfficientNaiveBayes:
+			return new EfficientNaiveBayes();
+		case NaiveBayes:
+			return new NaiveBayes();
+		default:
+			return new EfficientNaiveBayes();
+		}
+	}
 }

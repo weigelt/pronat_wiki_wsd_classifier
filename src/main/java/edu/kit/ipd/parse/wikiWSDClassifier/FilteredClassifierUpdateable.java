@@ -28,11 +28,14 @@ import weka.core.Instance;
 import weka.core.RevisionUtils;
 
 /**
- * <!-- globalinfo-start --> Class for running an arbitrary classifier on data that has been passed through an arbitrary
- * filter. Like the classifier, the structure of the filter is based exclusively on the training data and test instances
- * will be processed by the filter without changing their structure.<br/>
- * Incremental version: only takes incremental classifiers as base classifiers (i.e., they have to implement the
- * weka.classifiers.UpdateableClassifier interface).
+ * <!-- globalinfo-start --> Class for running an arbitrary classifier on data
+ * that has been passed through an arbitrary filter. Like the classifier, the
+ * structure of the filter is based exclusively on the training data and test
+ * instances will be processed by the filter without changing their
+ * structure.<br/>
+ * Incremental version: only takes incremental classifiers as base classifiers
+ * (i.e., they have to implement the weka.classifiers.UpdateableClassifier
+ * interface).
  * <p/>
  * <!-- globalinfo-end -->
  *
@@ -87,88 +90,87 @@ import weka.core.RevisionUtils;
  */
 public class FilteredClassifierUpdateable extends FilteredClassifier implements UpdateableClassifier {
 
-    /** for serialization. */
-    private static final long serialVersionUID = -423438402311145048L;
+	/** for serialization. */
+	private static final long serialVersionUID = -423438402311145048L;
 
-    /**
-     * Default constructor.
-     */
-    public FilteredClassifierUpdateable() {
-        super();
+	/**
+	 * Default constructor.
+	 */
+	public FilteredClassifierUpdateable() {
+		super();
+		m_Classifier = new weka.classifiers.bayes.NaiveBayesUpdateable();
+		m_Filter = new weka.filters.supervised.attribute.Discretize();
+	}
 
-        m_Classifier = new weka.classifiers.bayes.NaiveBayesUpdateable();
-        m_Filter = new weka.filters.supervised.attribute.Discretize();
-    }
+	/**
+	 * Returns a string describing this classifier.
+	 *
+	 * @return a description of the classifier suitable for displaying in the
+	 *         explorer/experimenter gui
+	 */
+	@Override
+	public String globalInfo() {
+		return super.globalInfo() + "\n" + "Incremental version: only takes incremental classifiers as base "
+				+ "classifiers (i.e., they have to implement the " + UpdateableClassifier.class.getName() + " interface).";
+	}
 
-    /**
-     * Returns a string describing this classifier.
-     *
-     * @return a description of the classifier suitable for displaying in the explorer/experimenter gui
-     */
-    @Override
-    public String globalInfo() {
-        return super.globalInfo() + "\n" + "Incremental version: only takes incremental classifiers as base "
-                + "classifiers (i.e., they have to implement the " + UpdateableClassifier.class.getName()
-                + " interface).";
-    }
+	/**
+	 * String describing default classifier.
+	 *
+	 * @return the default classifier classname
+	 */
+	@Override
+	protected String defaultClassifierString() {
+		return weka.classifiers.bayes.NaiveBayesUpdateable.class.getName();
+	}
 
-    /**
-     * String describing default classifier.
-     *
-     * @return the default classifier classname
-     */
-    @Override
-    protected String defaultClassifierString() {
-        return weka.classifiers.bayes.NaiveBayesUpdateable.class.getName();
-    }
+	/**
+	 * Set the base learner.
+	 *
+	 * @param value
+	 *            the classifier to use.
+	 */
+	@Override
+	public void setClassifier(Classifier value) {
+		if (!(value instanceof UpdateableClassifier)) {
+			throw new IllegalArgumentException("Classifier must be derived from " + UpdateableClassifier.class.getName() + "!");
+		} else {
+			super.setClassifier(value);
+		}
+	}
 
-    /**
-     * Set the base learner.
-     *
-     * @param value
-     *            the classifier to use.
-     */
-    @Override
-    public void setClassifier(Classifier value) {
-        if (!(value instanceof UpdateableClassifier)) {
-            throw new IllegalArgumentException(
-                    "Classifier must be derived from " + UpdateableClassifier.class.getName() + "!");
-        } else {
-            super.setClassifier(value);
-        }
-    }
+	/**
+	 * Updates a classifier using the given instance.
+	 *
+	 * @param instance
+	 *            the instance to included
+	 * @throws Exception
+	 *             if instance could not be incorporated successfully or not
+	 *             successfully filtered
+	 */
+	@Override
+	public void updateClassifier(Instance instance) throws Exception {
+		if (m_Filter.numPendingOutput() > 0) {
+			throw new Exception("Filter output queue not empty!");
+		}
+		if (!m_Filter.input(instance)) {
+			throw new Exception("Filter didn't make the train instance immediately available!");
+		}
 
-    /**
-     * Updates a classifier using the given instance.
-     *
-     * @param instance
-     *            the instance to included
-     * @throws Exception
-     *             if instance could not be incorporated successfully or not successfully filtered
-     */
-    @Override
-    public void updateClassifier(Instance instance) throws Exception {
-        if (m_Filter.numPendingOutput() > 0) {
-            throw new Exception("Filter output queue not empty!");
-        }
-        if (!m_Filter.input(instance)) {
-            throw new Exception("Filter didn't make the train instance immediately available!");
-        }
+		m_Filter.batchFinished();
+		Instance newInstance = m_Filter.output();
 
-        m_Filter.batchFinished();
-        Instance newInstance = m_Filter.output();
+		((UpdateableClassifier) m_Classifier).updateClassifier(newInstance);
+	}
 
-        ((UpdateableClassifier) m_Classifier).updateClassifier(newInstance);
-    }
-
-    /**
-     * Returns the revision string.
-     *
-     * @return the revision
-     */
-    @Override
-    public String getRevision() {
-        return RevisionUtils.extract("$Revision: 1.0 $");
-    }
+	/**
+	 * Returns the revision string.
+	 *
+	 * @return the revision
+	 */
+	@Override
+	public String getRevision() {
+		return RevisionUtils.extract("$Revision: 1.0 $");
+	}
 
 }

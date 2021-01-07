@@ -208,7 +208,7 @@ public class SerializationHelper {
 	private static void write(Object object, String outputFileName) {
 		try (FileOutputStream stream = new FileOutputStream(outputFileName);
 				OutputStream out = new DeflaterOutputStream(stream);
-				FSTObjectOutput fstOut = SerializationHelper.getFSTConfig().getObjectOutput(out);) {
+				FSTObjectOutput fstOut = SerializationHelper.getFSTConfig().getObjectOutput(out)) {
 			fstOut.writeObject(object);
 		} catch (IOException e) {
 			SerializationHelper.logger.warn(e.getMessage(), e.getCause());
@@ -217,7 +217,7 @@ public class SerializationHelper {
 
 	private static void writeNative(String outputFileName, Object object) {
 		try (FileOutputStream outputStream = new FileOutputStream(outputFileName);
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);) {
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)) {
 			objectOutputStream.writeObject(object);
 		} catch (IOException e) {
 			SerializationHelper.logger.warn(e.getMessage(), e.getCause());
@@ -227,7 +227,7 @@ public class SerializationHelper {
 	private static void writeNativeZipped(String outputFileName, Object object) {
 		try (FileOutputStream outputStream = new FileOutputStream(outputFileName);
 				GZIPOutputStream zippedStream = new GZIPOutputStream(outputStream);
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(zippedStream);) {
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(zippedStream)) {
 			objectOutputStream.writeObject(object);
 		} catch (IOException e) {
 			SerializationHelper.logger.warn(e.getMessage(), e.getCause());
@@ -236,7 +236,7 @@ public class SerializationHelper {
 
 	private static Object read(InputStream input) {
 		try (InputStream in = new InflaterInputStream(input);
-				FSTObjectInput fstIn = SerializationHelper.getFSTConfig().getObjectInput(in);) {
+				FSTObjectInput fstIn = SerializationHelper.getFSTConfig().getObjectInput(in)) {
 			return fstIn.readObject();
 		} catch (ClassNotFoundException | IOException e) {
 			SerializationHelper.logger.warn(e.getMessage(), e.getCause());
@@ -254,7 +254,7 @@ public class SerializationHelper {
 	}
 
 	private static Object readNativeZipped(InputStream input) {
-		try (GZIPInputStream zippedStream = new GZIPInputStream(input); ObjectInputStream in = new ObjectInputStream(zippedStream);) {
+		try (GZIPInputStream zippedStream = new GZIPInputStream(input); ObjectInputStream in = new ObjectInputStream(zippedStream)) {
 			return in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
 			SerializationHelper.logger.warn(e.getMessage(), e.getCause());
