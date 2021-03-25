@@ -1,4 +1,4 @@
-package edu.kit.ipd.pronat.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wiki_wsd.classifier;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;

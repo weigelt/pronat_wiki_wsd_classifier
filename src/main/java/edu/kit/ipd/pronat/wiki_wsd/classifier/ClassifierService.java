@@ -1,4 +1,4 @@
-package edu.kit.ipd.pronat.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wiki_wsd.classifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -19,7 +19,7 @@
  * Copyright (C) 2008 University of Waikato, Hamilton, New Zealand
  */
 
-package edu.kit.ipd.pronat.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wiki_wsd.classifier;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.UpdateableClassifier;
