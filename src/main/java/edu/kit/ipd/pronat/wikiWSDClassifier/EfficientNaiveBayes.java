@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import weka.core.Utils;
  * in the feature vector.
  *
  * @author Jan Keim
+ * @author Sebastian Weigelt
  *
  */
 public class EfficientNaiveBayes extends NaiveBayes {

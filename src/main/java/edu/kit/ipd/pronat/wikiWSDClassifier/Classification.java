@@ -1,5 +1,10 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
+/**
+ * @author Jan Keim
+ * @author Sebastian Weigelt
+ *
+ */
 public class Classification implements Comparable<Classification> {
 	private String classification;
 	private double probability;

@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +22,11 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToNominal;
 
+/**
+ * @author Jan Keim
+ * @author Sebastian Weigelt
+ *
+ */
 public class SerializationHelper {
 	private static final Logger logger = LoggerFactory.getLogger(SerializationHelper.class);
 	private static FSTConfiguration conf;

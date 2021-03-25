@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -6,6 +6,7 @@ import weka.core.Instances;
 
 /**
  * @author Jan Keim
+ * @author Sebastian Weigelt
  *
  */
 public class InstanceBuilder {

@@ -19,7 +19,7 @@
  *     Modified by Jan Keim, Karlsruhe Institute of Technology
  */
 
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;

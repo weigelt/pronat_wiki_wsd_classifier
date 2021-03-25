@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
@@ -7,6 +7,7 @@ import weka.classifiers.bayes.NaiveBayes;
  * Enum representing the various classifier methods like NaiveBayes.
  *
  * @author Jan Keim
+ * @author Sebastian Weigelt
  *
  */
 public enum ClassifierMethod {

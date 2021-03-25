@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>edu.kit.ipd.parse</groupId>
-        <artifactId>parse</artifactId>
-        <version>0.0.5-SNAPSHOT</version>
+        <groupId>edu.kit.ipd.pronat</groupId>
+        <artifactId>pronat</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>wikiWSDClassifier</artifactId>
+    <artifactId>wiki_wsd_classifier</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>WikiWSD classifier</name>
+    <name>Wiki WSD classifier</name>
     <description>Classifier for WSD using Wiki and helper/utility classes to use the classifier
     </description>
 

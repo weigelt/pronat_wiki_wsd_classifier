@@ -1,4 +1,4 @@
-package edu.kit.ipd.parse.wikiWSDClassifier;
+package edu.kit.ipd.pronat.wikiWSDClassifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +20,7 @@ import weka.filters.Filter;
 
 /**
  * @author Jan Keim
+ * @author Sebastian Weigelt
  *
  */
 public class ClassifierService {
@@ -304,7 +305,7 @@ public class ClassifierService {
 		if (!instanceIsFiltered(instanceCopy)) {
 			// attributes are not nominal, they need to be filtered first!
 			try {
-          filter.input(instanceCopy);
+				filter.input(instanceCopy);
 			} catch (Exception e) {
 				ClassifierService.logger.warn(e.getMessage(), e.getCause());
 				return List.of(Classification.empty());
