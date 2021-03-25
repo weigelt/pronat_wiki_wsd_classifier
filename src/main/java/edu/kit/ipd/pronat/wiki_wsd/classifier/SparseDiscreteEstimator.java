@@ -21,6 +21,7 @@
 
 package edu.kit.ipd.pronat.wiki_wsd.classifier;
 
+import java.io.Serial;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,9 +45,9 @@ import weka.estimators.IncrementalEstimator;
  * @version $Revision: 11247 $
  */
 public class SparseDiscreteEstimator extends Estimator implements IncrementalEstimator, Aggregateable<SparseDiscreteEstimator> {
-
 	/** for serialization */
-	private static final long serialVersionUID = -5526486742612434779L;
+	@Serial
+	private static final long serialVersionUID = -874090346650710359L;
 
 	/** Hold the counts */
 	private final ConcurrentHashMap<Integer, Double> counts;

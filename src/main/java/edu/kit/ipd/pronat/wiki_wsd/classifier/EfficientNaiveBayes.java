@@ -1,5 +1,6 @@
 package edu.kit.ipd.pronat.wiki_wsd.classifier;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -29,7 +30,8 @@ import weka.core.Utils;
  */
 public class EfficientNaiveBayes extends NaiveBayes {
 	/** for serialization */
-	private static final long serialVersionUID = -9126601110930963510L;
+	@Serial
+	private static final long serialVersionUID = -2005943895798009959L;
 
 	public EfficientNaiveBayes() {
 		super();
