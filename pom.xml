@@ -17,14 +17,6 @@
         <weka.version>3.8.3</weka.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>ipdNexus-public-all</id>
-            <name>IPD-Repository</name>
-            <url>https://bob.ipd.kit.edu/nexus/repository/maven-public-all</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
